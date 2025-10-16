@@ -2,11 +2,13 @@
 # Bank-app
 
 ## Author:
+
 name:
-
+Piotr
 surname:
-
+Burchardt
 group:
+1
 
 ## How to start the app
 

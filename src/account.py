@@ -10,5 +10,25 @@ class Account:
         else:
             self.pesel = pesel
 
-        if promo_code and (promo_code[0:5] == "PROM_") and promo_code[-3:].isdigit() and len(promo_code) == 8 and int(pesel[0:2]) >= 60 :
+        if self.is_valid_promo(promo_code) and self.is_eligible_for_promo():
             self.balance += 50.0
+
+    def is_valid_promo(self, promo_code):
+            if promo_code is None:
+                return False
+            return promo_code[0:5] == "PROM_" and len(promo_code) > 5
+
+    def is_eligible_for_promo(self):
+            if self.pesel == "Invalid":
+                return False
+            year = self.get_birth_year()
+            return year > 1960
+
+    def get_birth_year(self):
+            year = int(self.pesel[:2])
+            month = int(self.pesel[2:4])
+            if 1 <= month <= 12:
+                return 1900 + year
+            elif 21 <= month <= 32:
+                return 2000 + year
+            return 0

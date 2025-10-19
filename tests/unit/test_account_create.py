@@ -17,7 +17,7 @@ class TestAccount:
         assert acc.balance == 0.0
 
     def test_account_with_invalid_promo(self):
-        acc = Account("John", "Doe", "12345678912", "zly kod")
+        acc = Account("John", "Doe", "12345672212", "zly kod")
         assert acc.balance == 0.0
 
     def test_account_with_valid_promo_but_too_old(self):

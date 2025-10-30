@@ -8,6 +8,12 @@ class TestAccount:
         assert account.balance == 0.0
         assert account.pesel == "Invalid" or len(account.pesel) == 11
 
+    def test_account_stores_valid_pesel(self):
+        valid_pesel = "01234567891"
+        account = Account("Jane", "Doe", valid_pesel)
+
+        assert account.pesel == valid_pesel
+
     def test_account_with_valid_promo(self):
         acc = Account("John", "Doe", "05260000000", "PROM_123")
         assert acc.balance == 50.0
@@ -21,5 +27,5 @@ class TestAccount:
         assert acc.balance == 0.0
 
     def test_account_with_valid_promo_but_too_old(self):
-        acc = Account("John", "Old", "50345678912", "PROM_123")
+        acc = Account("John", "Old", "50010178912", "PROM_123")
         assert acc.balance == 0.0

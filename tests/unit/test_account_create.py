@@ -29,3 +29,12 @@ class TestAccount:
     def test_account_with_valid_promo_but_too_old(self):
         acc = Account("John", "Old", "50010178912", "PROM_123")
         assert acc.balance == 0.0
+
+    def test_account_with_valid_promo_but_invalid_pesel(self):
+        acc = Account("Jane", "Invalid", "123", "PROM_12345")
+        assert acc.balance == 0.0
+        assert not acc.is_eligible_for_promo()
+
+    def test_get_birth_year_returns_zero_for_unknown_month(self):
+        acc = Account("Sam", "Doe", "99130000000")
+        assert acc.get_birth_year() == 0

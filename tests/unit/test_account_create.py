@@ -37,4 +37,4 @@ class TestAccount:
 
     def test_get_birth_year_returns_zero_for_unknown_month(self):
         acc = Account("Sam", "Doe", "99130000000")
-        assert acc.get_birth_year() == 0
+        assert acc.get_birth_year() == 00

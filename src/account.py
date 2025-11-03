@@ -3,22 +3,27 @@ class BaseAccount:
 
     def __init__(self):
         self.balance = 0.0
+        self.history = []
 
     def transfer_in(self, amount):
         if amount > 0:
             self.balance += amount
+            self.history.append(amount)
             return True
         return False
 
     def transfer_out(self, amount):
         if amount > 0 and amount <= self.balance:
             self.balance -= amount
+            self.history.append(-1 * amount)
             return True
         return False
 
     def express_transfer_out(self, amount):
         if amount > 0 and amount <= self.balance:
             self.balance -= amount + self.express_fee
+            self.history.append(-1 * amount)
+            self.history.append(-1 * self.express_fee)
             return True
         return False
 

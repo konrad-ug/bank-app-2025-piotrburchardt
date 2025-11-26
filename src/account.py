@@ -65,6 +65,25 @@ class Account(BaseAccount):
             return 2000 + year
         return 0
 
+    def submit_for_loan(self, amount):
+        if amount <= 0:
+            return False
+
+        history_len = len(self.history)
+
+        if history_len >= 3:
+            last_three = self.history[-3:]
+            if all(txn > 0 for txn in last_three):
+                self.balance += amount
+                return True
+
+        if history_len >= 5:
+            last_five_sum = sum(self.history[-5:])
+            if last_five_sum > amount:
+                self.balance += amount
+                return True
+
+        return False
 
 class BusinessAccount(BaseAccount):
     express_fee = 5.0

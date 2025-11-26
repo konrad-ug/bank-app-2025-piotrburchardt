@@ -95,3 +95,6 @@ class BusinessAccount(BaseAccount):
             self.nip = nip
         else:
             self.nip = "Invalid"
+
+
+    "e"

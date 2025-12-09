@@ -82,7 +82,6 @@ class Account(BaseAccount):
             if last_five_sum > amount:
                 self.balance += amount
                 return True
-
         return False
 
 class BusinessAccount(BaseAccount):

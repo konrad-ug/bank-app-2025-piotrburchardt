@@ -1,40 +1,41 @@
+import pytest
+
 from src.account import Account
 
 class TestAccount:
-    def test_account_creation(self):
-        account = Account("John", "Doe", "123")
-        assert account.first_name == "John"
-        assert account.last_name == "Doe"
+    @pytest.mark.parametrize(
+        "first_name,last_name,pesel,expected_pesel",
+        [
+            ("John", "Doe", "123", "Invalid"),
+            ("Jane", "Doe", "01234567891", "01234567891"),
+        ],
+    )
+    def test_account_creation(self, first_name, last_name, pesel, expected_pesel):
+        account = Account(first_name, last_name, pesel)
+
+        assert account.first_name == first_name
+        assert account.last_name == last_name
         assert account.balance == 0.0
-        assert account.pesel == "Invalid" or len(account.pesel) == 11
+        assert account.pesel == expected_pesel
 
-    def test_account_stores_valid_pesel(self):
-        valid_pesel = "01234567891"
-        account = Account("Jane", "Doe", valid_pesel)
+    @pytest.mark.parametrize(
+        "pesel,promo_code,expected_balance,eligible",
+        [
+            ("05260000000", "PROM_123", 50.0, True),
+            ("12345678912", None, 0.0, None),
+            ("12345672212", "zly kod", 0.0, None),
+            ("50010178912", "PROM_123", 0.0, False),
+            ("123", "PROM_12345", 0.0, False),
+        ],
+    )
+    def test_account_promo_flow(self, pesel, promo_code, expected_balance, eligible):
+        acc = Account("John", "Doe", pesel, promo_code)
 
-        assert account.pesel == valid_pesel
-
-    def test_account_with_valid_promo(self):
-        acc = Account("John", "Doe", "05260000000", "PROM_123")
-        assert acc.balance == 50.0
-
-    def test_account_without_promo(self):
-        acc = Account("Jan", "Doe", "12345678912")
-        assert acc.balance == 0.0
-
-    def test_account_with_invalid_promo(self):
-        acc = Account("John", "Doe", "12345672212", "zly kod")
-        assert acc.balance == 0.0
-
-    def test_account_with_valid_promo_but_too_old(self):
-        acc = Account("John", "Old", "50010178912", "PROM_123")
-        assert acc.balance == 0.0
-
-    def test_account_with_valid_promo_but_invalid_pesel(self):
-        acc = Account("Jane", "Invalid", "123", "PROM_12345")
-        assert acc.balance == 0.0
-        assert not acc.is_eligible_for_promo()
+        assert acc.balance == expected_balance
+        if eligible is not None:
+            assert acc.is_eligible_for_promo() is eligible
 
     def test_get_birth_year_returns_zero_for_unknown_month(self):
         acc = Account("Sam", "Doe", "99130000000")
+
         assert acc.get_birth_year() == 00

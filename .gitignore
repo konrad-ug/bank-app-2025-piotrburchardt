@@ -205,3 +205,22 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+labs.txt
+
+# OS-generated cruft
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor settings
+.idea/
+.vscode/
+*.iml
+
+# Local environment files
+.env.local
+.env.*.backup
+.python-version

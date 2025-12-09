@@ -2,6 +2,13 @@ import pytest
 
 
 class TestAccountLoans:
+    def test_declines_non_positive_amount(self, personal_account):
+        personal_account.transfer_in(100)
+
+        assert personal_account.submit_for_loan(0) is False
+        assert personal_account.submit_for_loan(-50) is False
+        assert personal_account.balance == 100
+
     def test_declines_with_fewer_than_three_transactions(self, personal_account):
         personal_account.transfer_in(100)
 

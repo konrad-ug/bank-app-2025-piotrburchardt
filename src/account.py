@@ -95,3 +95,36 @@ class BusinessAccount(BaseAccount):
             self.nip = nip
         else:
             self.nip = "Invalid"
+
+    def submit_for_loan(self, amount):
+        if amount <= 0:
+            return False
+
+        has_zus_payment = -1775 in self.history
+        sufficient_balance = self.balance >= 2 * amount
+
+        if has_zus_payment and sufficient_balance:
+            self.balance += amount
+            return True
+
+        return False
+
+
+class AccountsRegistry:
+    def __init__(self):
+        self.accounts = []
+
+    def add_account(self, account):
+        self.accounts.append(account)
+
+    def get_account_by_pesel(self, pesel):
+        for account in self.accounts:
+            if getattr(account, "pesel", None) == pesel:
+                return account
+        return None
+
+    def get_all_accounts(self):
+        return list(self.accounts)
+
+    def get_accounts_count(self):
+        return len(self.accounts)

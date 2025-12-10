@@ -132,6 +132,7 @@ def test_create_business_account(client):
 def test_delete_account_returns_404_when_missing(client):
     response = client.delete("/api/accounts/11111111111")
 
+
     assert response.status_code == 404
 
 

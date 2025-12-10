@@ -28,6 +28,8 @@ def create_account():
     else:
         if not data.get("name") or not data.get("surname") or not data.get("pesel"):
             return jsonify({"message": "name, surname and pesel are required"}), 400
+        if registry.get_account_by_pesel(data["pesel"]):
+            return jsonify({"message": "Account with this pesel already exists"}), 409
         account = Account(data["name"], data["surname"], data["pesel"], data.get("promo_code"))
 
     registry.add_account(account)
@@ -77,3 +79,35 @@ def delete_account(pesel):
 
     registry.accounts.remove(account)
     return jsonify({"message": "Account deleted"}), 200
+
+
+@app.route("/api/accounts/<pesel>/transfer", methods=["POST"])
+def transfer(pesel):
+    account = registry.get_account_by_pesel(pesel)
+    if account is None:
+        return jsonify({"message": "Account not found"}), 404
+
+    data = request.get_json(force=True, silent=True) or {}
+    transfer_type = data.get("type")
+    amount = data.get("amount")
+
+    if transfer_type not in ("incoming", "outgoing", "express"):
+        return jsonify({"message": "Invalid transfer type"}), 400
+
+    if not isinstance(amount, (int, float)):
+        return jsonify({"message": "amount is required"}), 400
+
+    if transfer_type == "incoming":
+        success = account.transfer_in(amount)
+        if not success:
+            return jsonify({"message": "Transfer failed"}), 400
+    elif transfer_type == "outgoing":
+        success = account.transfer_out(amount)
+        if not success:
+            return jsonify({"message": "Transfer failed"}), 422
+    else:
+        success = account.express_transfer_out(amount)
+        if not success:
+            return jsonify({"message": "Transfer failed"}), 422
+
+    return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200

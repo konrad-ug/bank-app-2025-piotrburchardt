@@ -1,4 +1,16 @@
+import pytest
+
 from src.account import BusinessAccount
+
+
+@pytest.fixture(autouse=True)
+def mock_mf_request(mocker):
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "result": {"subject": {"statusVat": "Czynny"}}
+    }
+    return mocker.patch("src.account.requests.get", return_value=mock_response)
 
 
 class TestBusinessAccount:
@@ -12,6 +24,12 @@ class TestBusinessAccount:
     def test_business_account_marks_invalid_nip(self):
         account = BusinessAccount("Acme", "123")
 
+        assert account.nip == "Invalid"
+
+    def test_business_account_does_not_call_api_for_invalid_length(self, mock_mf_request):
+        account = BusinessAccount("Acme", "123")
+
+        mock_mf_request.assert_not_called()
         assert account.nip == "Invalid"
 
     def test_business_account_transfers(self):
@@ -36,3 +54,14 @@ class TestBusinessAccount:
 
         assert result is True
         assert account.balance == -5.0
+
+    def test_business_account_raises_for_inactive_nip(self, mocker):
+        mock_response = mocker.Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "result": {"subject": {"statusVat": "Zwolniony"}}
+        }
+        mocker.patch("src.account.requests.get", return_value=mock_response)
+
+        with pytest.raises(ValueError, match="Company not registered!!"):
+            BusinessAccount("Acme", "1234567890")

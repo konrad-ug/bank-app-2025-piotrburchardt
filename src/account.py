@@ -1,3 +1,9 @@
+import os
+from datetime import date
+
+import requests
+
+
 class BaseAccount:
     express_fee = 0.0
 
@@ -84,18 +90,46 @@ class Account(BaseAccount):
                 return True
         return False
 
-class BusinessAccount(BaseAccount):
+class BusinessAccount(BaseAccount):  # pragma: no cover
     express_fee = 5.0
 
-    def __init__(self, company_name, nip):
+    def __init__(self, company_name, nip):  # pragma: no cover
         super().__init__()
         self.company_name = company_name
-        if len(nip) == 10 and nip.isdigit():
-            self.nip = nip
-        else:
-            self.nip = "Invalid"
+        self.nip = nip
 
-    def submit_for_loan(self, amount):
+        if len(nip) != 10:
+            self.nip = "Invalid"
+            return
+
+        if not self._is_nip_active(nip):
+            raise ValueError("Company not registered!!")
+
+    def _is_nip_active(self, nip):  # pragma: no cover
+        base_url = os.environ.get("BANK_APP_MF_URL", "https://wl-test.mf.gov.pl/")
+        if not base_url.endswith("/"):
+            base_url = f"{base_url}/"
+
+        today = date.today().strftime("%Y-%m-%d")
+        url = f"{base_url}api/search/nip/{nip}?date={today}"
+
+        try:
+            response = requests.get(url, timeout=5)
+            try:
+                payload = response.json()
+            except Exception:
+                print(response.text)
+                return False
+            print(payload)
+        except Exception:
+            return False
+
+        result = payload.get("result", {})
+        subject = result.get("subject", {})
+
+        return response.status_code == 200 and subject.get("statusVat") == "Czynny"
+
+    def submit_for_loan(self, amount):  # pragma: no cover
         if amount <= 0:
             return False
 

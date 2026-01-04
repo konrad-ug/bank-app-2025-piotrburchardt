@@ -2,6 +2,16 @@ import pytest
 from app.api import app, registry
 
 
+@pytest.fixture(autouse=True)
+def mock_mf_request(mocker):
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "result": {"subject": {"statusVat": "Czynny"}}
+    }
+    return mocker.patch("src.account.requests.get", return_value=mock_response)
+
+
 @pytest.fixture
 def client():
     with app.test_client() as client:

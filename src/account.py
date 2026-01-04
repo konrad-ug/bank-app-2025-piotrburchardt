@@ -1,8 +1,7 @@
 import os
 from datetime import date
-
 import requests
-
+from src.smtp.smtp import SMTPClient
 
 class BaseAccount:
     express_fee = 0.0
@@ -71,6 +70,11 @@ class Account(BaseAccount):
             return 2000 + year
         return 0
 
+    def send_history_via_email(self, email_address):
+        subject = f"Account Transfer History {date.today().strftime('%Y-%m-%d')}"
+        text = f"Personal account history: {self.history}"
+        return SMTPClient.send(subject, text, email_address)
+
     def submit_for_loan(self, amount):
         if amount <= 0:
             return False
@@ -128,6 +132,11 @@ class BusinessAccount(BaseAccount):  # pragma: no cover
         subject = result.get("subject", {})
 
         return response.status_code == 200 and subject.get("statusVat") == "Czynny"
+
+    def send_history_via_email(self, email_address):  # pragma: no cover
+        subject = f"Account Transfer History {date.today().strftime('%Y-%m-%d')}"
+        text = f"Company account history: {self.history}"
+        return SMTPClient.send(subject, text, email_address)
 
     def submit_for_loan(self, amount):  # pragma: no cover
         if amount <= 0:

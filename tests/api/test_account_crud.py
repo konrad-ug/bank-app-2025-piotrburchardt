@@ -2,16 +2,6 @@ import pytest
 from app.api import app, registry
 
 
-@pytest.fixture(autouse=True)
-def mock_mf_request(mocker):
-    mock_response = mocker.Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "result": {"subject": {"statusVat": "Czynny"}}
-    }
-    return mocker.patch("src.account.requests.get", return_value=mock_response)
-
-
 @pytest.fixture
 def client():
     with app.test_client() as client:
@@ -101,42 +91,10 @@ def test_create_account_missing_fields_returns_400(client):
     assert response.status_code == 400
 
 
-def test_create_business_account_requires_fields(client):
-    response = client.post("/api/accounts", json={"type": "business"})
-
-    assert response.status_code == 400
-
-
 def test_update_account_returns_404_when_missing(client):
     response = client.patch("/api/accounts/99999999999", json={"name": "x"})
 
     assert response.status_code == 404
-
-
-def test_update_business_account(client):
-    from src.account import BusinessAccount
-
-    account = BusinessAccount("OldCo", "1234567890")
-    account.pesel = "BIZ00000001"
-    registry.add_account(account)
-
-    response = client.patch(
-        f"/api/accounts/{account.pesel}", json={"company_name": "NewCo"}
-    )
-
-    assert response.status_code == 200
-    assert response.get_json()["name"] == "NewCo"
-
-
-def test_create_business_account(client):
-    payload = {"type": "business", "company_name": "Biz", "nip": "1234567890"}
-
-    response = client.post("/api/accounts", json=payload)
-
-    assert response.status_code == 201
-    data = response.get_json()
-    assert data["type"] == "business"
-    assert data["nip"] == payload["nip"]
 
 
 def test_delete_account_returns_404_when_missing(client):

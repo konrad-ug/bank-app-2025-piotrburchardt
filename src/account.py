@@ -1,8 +1,6 @@
 import os
 from datetime import date
-
 import requests
-
 
 class BaseAccount:
     express_fee = 0.0

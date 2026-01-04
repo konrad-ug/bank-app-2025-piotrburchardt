@@ -1,5 +1,6 @@
 pytest==8.4.2
+pytest-mock==3.14.0
 coverage==6.5.0
 Flask==2.2.5
 requests==2.32.3
-Werkzeug<3g
+Werkzeug<3

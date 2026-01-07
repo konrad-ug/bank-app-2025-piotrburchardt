@@ -1,7 +1,6 @@
 import pytest
 from app.api import app, registry
 
-
 @pytest.fixture
 def client():
     with app.test_client() as client:

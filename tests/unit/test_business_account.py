@@ -3,16 +3,6 @@ import pytest
 from src.account import BusinessAccount
 
 
-@pytest.fixture(autouse=True)
-def mock_mf_request(mocker):
-    mock_response = mocker.Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "result": {"subject": {"statusVat": "Czynny"}}
-    }
-    return mocker.patch("src.account.requests.get", return_value=mock_response)
-
-
 class TestBusinessAccount:
     def test_business_account_stores_valid_nip(self):
         account = BusinessAccount("Acme", "1234567890")

@@ -37,7 +37,7 @@ class TestBusinessAccountLoans:
         for operation, amount in operations:
             getattr(business_account, operation)(amount)
 
-        result = business_account.submit_for_loan(loan_amount)
+        result = business_account.take_loan(loan_amount)
 
         assert result is expected_result
         assert business_account.balance == expected_balance

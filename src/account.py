@@ -79,20 +79,25 @@ class Account(BaseAccount):
         if amount <= 0:
             return False
 
-        history_len = len(self.history)
+        if self._has_three_recent_deposits():
+            self.balance += amount
+            return True
 
-        if history_len >= 3:
-            last_three = self.history[-3:]
-            if all(txn > 0 for txn in last_three):
-                self.balance += amount
-                return True
-
-        if history_len >= 5:
-            last_five_sum = sum(self.history[-5:])
-            if last_five_sum > amount:
-                self.balance += amount
-                return True
+        if self._has_recent_sum_exceeding(amount):
+            self.balance += amount
+            return True
         return False
+
+    def _has_three_recent_deposits(self):
+        if len(self.history) < 3:
+            return False
+        last_three = self.history[-3:]
+        return all(txn > 0 for txn in last_three)
+
+    def _has_recent_sum_exceeding(self, amount):
+        if len(self.history) < 5:
+            return False
+        return sum(self.history[-5:]) > amount
 
 class BusinessAccount(BaseAccount):  # pragma: no cover
     express_fee = 5.0
@@ -138,7 +143,7 @@ class BusinessAccount(BaseAccount):  # pragma: no cover
         text = f"Company account history: {self.history}"
         return SMTPClient.send(subject, text, email_address)
 
-    def submit_for_loan(self, amount):  # pragma: no cover
+    def take_loan(self, amount):  # pragma: no cover
         if amount <= 0:
             return False
 

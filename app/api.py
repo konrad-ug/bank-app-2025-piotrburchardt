@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 from src.account import Account, AccountsRegistry
+from src.accounts_repository import MongoAccountsRepository
 
 app = Flask(__name__)
 registry = AccountsRegistry()
+repository = MongoAccountsRepository()
 
 
 def _serialize_account(account):
@@ -17,14 +19,12 @@ def _serialize_account(account):
 @app.route("/api/accounts", methods=["POST"])
 def create_account():
     data = request.get_json(force=True, silent=True) or {}
-    if not data.get("name") or not data.get("surname") or not data.get("pesel"):
-        return jsonify({"message": "name, surname and pesel are required"}), 400
     if registry.get_account_by_pesel(data["pesel"]):
         return jsonify({"message": "Account with this pesel already exists"}), 409
-    account = Account(data["name"], data["surname"], data["pesel"], data.get("promo_code"))
+    account = Account(data["name"], data["surname"], data["pesel"])
 
     registry.add_account(account)
-    return jsonify(_serialize_account(account)), 201
+    return jsonify({"message": "Account created"}), 201
 
 
 @app.route("/api/accounts", methods=["GET"])
@@ -56,7 +56,7 @@ def update_account(pesel):
     account.first_name = data.get("name", account.first_name)
     account.last_name = data.get("surname", account.last_name)
 
-    return jsonify(_serialize_account(account)), 200
+    return jsonify({"message": "Account updated"}), 200
 
 
 @app.route("/api/accounts/<pesel>", methods=["DELETE"])
@@ -99,3 +99,19 @@ def transfer(pesel):
             return jsonify({"message": "Transfer failed"}), 422
 
     return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200
+
+
+@app.route("/api/accounts/save", methods=["POST"])
+def save_accounts():
+    accounts = registry.get_all_accounts()
+    repository.save_all(accounts)
+    return jsonify({"message": "Accounts saved"}), 200
+
+
+@app.route("/api/accounts/load", methods=["POST"])
+def load_accounts():
+    registry.accounts.clear()
+    accounts = repository.load_all()
+    for account in accounts:
+        registry.add_account(account)
+    return jsonify({"message": "Accounts loaded"}), 200
